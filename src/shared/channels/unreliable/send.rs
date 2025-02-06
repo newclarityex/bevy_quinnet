@@ -34,13 +34,15 @@ pub(crate) async fn unreliable_channel_task(
         }
         _ = async {
             while let Some(msg_bytes) = bytes_to_channel_recv.recv().await {
+                let msg_size = msg_bytes.len();
 
                 if let Err(err) = send_unreliable_message(&connection, msg_bytes, channel_id) {
                     error!("Error while sending message on Unreliable Channel, {}", err);
                     match err {
                         SendDatagramError::UnsupportedByPeer => (),
                         SendDatagramError::Disabled => (),
-                        SendDatagramError::TooLarge => (),
+                        SendDatagramError::TooLarge =>
+                            error!("Datagram Size {:?}, Max Size {:?}", msg_size, connection.max_datagram_size()),
                         SendDatagramError::ConnectionLost(_) => {
                             from_channels_send.send(
                                 ChannelAsyncMessage::LostConnection)
