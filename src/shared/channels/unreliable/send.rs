@@ -41,8 +41,9 @@ pub(crate) async fn unreliable_channel_task(
                     match err {
                         SendDatagramError::UnsupportedByPeer => (),
                         SendDatagramError::Disabled => (),
-                        SendDatagramError::TooLarge =>
-                            error!("Datagram Size {:?}, Max Size {:?}", msg_size, connection.max_datagram_size()),
+                        SendDatagramError::TooLarge => {
+                            error!("Datagram too large: Size {:?} bytes, Max Size {:?} bytes", msg_size, connection.max_datagram_size());
+                        },
                         SendDatagramError::ConnectionLost(_) => {
                             from_channels_send.send(
                                 ChannelAsyncMessage::LostConnection)
